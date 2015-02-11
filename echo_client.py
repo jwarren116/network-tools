@@ -23,7 +23,7 @@ def client(msg):
             client_socket.close()
         response_msg += msg_part
 
-    print response_msg
+    return response_msg
 
 
 if __name__ == '__main__':
