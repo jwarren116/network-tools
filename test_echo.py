@@ -6,4 +6,8 @@ def test_1():
 
 
 def test_2():
-    assert client(u'This is an é unicode test') == u'This is an é unicode test'
+    assert client('This string is larger than my current buffer size. It should return all of the characters. This is the last sentence of this test.') == 'This string is larger than my current buffer size. It should return all of the characters. This is the last sentence of this test.'
+
+
+def test_3():
+    assert client('') == ''
