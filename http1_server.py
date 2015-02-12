@@ -22,7 +22,14 @@ def response_error(code, reason):
 
 
 def parse_request(request):
-    pass
+    request = request.split('\r\n')
+    first_line = request[0].split(' ')
+    if first_line[0] != "GET":
+        return response_error(405, "Request not allowed")
+    elif first_line[2] != "HTTP/1.1":
+        return response_error(505, "Invalid protocol")
+    else:
+        return response_ok(first_line[1])
 
 
 try:
