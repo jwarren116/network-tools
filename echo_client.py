@@ -1,5 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import socket
 import sys
+
+
+test_get = "GET /index.html HTTP/1.1"
 
 
 def client(msg):
@@ -13,7 +19,7 @@ def client(msg):
     client_socket.sendall(msg)
     client_socket.shutdown(socket.SHUT_WR)
 
-    buffsize = 32
+    buffsize = 4096
     response_msg = ''
     done = False
     while not done:
