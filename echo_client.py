@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 import socket
 import sys
@@ -19,7 +19,7 @@ def client(msg):
     client_socket.sendall(msg)
     client_socket.shutdown(socket.SHUT_WR)
 
-    buffsize = 4096
+    buffsize = 32
     response_msg = ''
     done = False
     while not done:
@@ -29,6 +29,7 @@ def client(msg):
             client_socket.close()
         response_msg += msg_part
 
+    print response_msg
     return response_msg
 
 
