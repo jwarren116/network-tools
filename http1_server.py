@@ -48,10 +48,8 @@ def server():
                 if len(msg) < buffsize:
                     done = True
                 req += msg
-                # print "This is the request:"
-                # print req
-                # print "----"
 
+            # send full request to parser, prints request and response
             response_msg = parse_request(req)
             print "REQUEST: {}".format(req)
             print "RESPONSE: \n{}\n--end--".format(response_msg)
@@ -61,6 +59,7 @@ def server():
             connection.shutdown(socket.SHUT_WR)
             connection.close()
     except KeyboardInterrupt:
+        # close socket completely on interupt
         server_socket.close()
 
 
