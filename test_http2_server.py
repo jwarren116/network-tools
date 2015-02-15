@@ -2,24 +2,24 @@ from echo_client import client
 
 
 def test_ok():
-    response = client('GET /index.html HTTP/1.1').split('\r\n')
+    response = client('GET a_web_page.html HTTP/1.1').split('\r\n')
     first_line = response[0]
     assert first_line == 'HTTP/1.1 200 OK'
 
 
 def test_body():
-    response = client('GET /index.html HTTP/1.1').split('\r\n')
-    body = response[3]
-    assert '' in body
+    response = client('GET sample.txt HTTP/1.1').split('\r\n')
+    body = response[4]
+    assert 'This is a very simple text file.' in body
 
 
 def test_directory():
     response = client('GET / HTTP/1.1').split('\r\n')
-    body = response[3]
-    assert '<a href="/index.html">/index.html</a>' in body
+    body = response[4]
+    assert 'make_time.py' in body
 
 
 def test_404():
-    response = client('GET /does/not/exist.html HTTP/1.1').split('\r\n')
+    response = client('GET does/not/exist.html HTTP/1.1').split('\r\n')
     first_line = response[0]
     assert first_line == 'HTTP/1.1 404 Not Found'
