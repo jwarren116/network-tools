@@ -50,20 +50,26 @@ def resolve_uri(uri):
     # take URI from response_ok, return tuple of (content-type, body)
     # if URI is directory, return listing of the directory (links)
     # if URI not found, return 404
+    uri = uri.lstrip('/')
     content = mimetypes.guess_type(uri)
     if content[0] is None:
         body = os.listdir(os.path.join(ROOT, uri))
-        return (content[0], body)
+        dir_body = "<!DOCTYPE html><html><body><ul>"
+        for item in body:
+            dir_body = "{}<a href='{}'>{}</a></br>".format(
+                dir_body, item, item)
+        return (content[0], dir_body)
     else:
         try:
-            with open(os.path.join(ROOT, uri)) as file_handle:
+            with open(os.path.join(ROOT, uri), 'rb') as file_handle:
                 body = file_handle.read()
                 return (content[0], body)
         except IOError:
-            return (404, "Not Found")
+            return (404, "404 - Page Not Found")
 
 
 def server():
+    print "Serving files from: {}".format(ROOT)
     try:
         server_socket = socket.socket(
             socket.AF_INET,
