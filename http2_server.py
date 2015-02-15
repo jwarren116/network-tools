@@ -1,16 +1,29 @@
 #!/usr/bin/env python
 import socket
 import email.utils
+import mimetypes
+import os
+
+
+ROOT = os.path.join(os.getcwd(), 'webroot')
 
 
 def response_ok(uri):
     # send URI to be resolved
     # include appropriate header reflecting correct content
     # add body from appropriate resource
-    response_code = "HTTP/1.1 200 OK"
+
+    resolved_uri = resolve_uri(uri)
+    if resolved_uri[0] == 404:
+        response_code = "HTTP/1.1 404 Not Found"
+        headers = "Content-Type: text/plain"
+    else:
+        response_code = "HTTP/1.1 200 OK"
+        headers = "Content-Type: {}".format(resolved_uri[0])
+
     date = "Date: {}".format(email.utils.formatdate(usegmt=True))
-    headers = "Content-Type: Text/HTML"
-    response = "{}\r\n{}\r\n{}\r\n\r\n".format(response_code, date, headers)
+    response = "{}\r\n{}\r\n{}\r\n\r\n{}".format(
+        response_code, date, headers, resolved_uri[1])
     return response
 
 
@@ -37,7 +50,17 @@ def resolve_uri(uri):
     # take URI from response_ok, return tuple of (content-type, body)
     # if URI is directory, return listing of the directory (links)
     # if URI not found, return 404
-    pass
+    content = mimetypes.guess_type(uri)
+    if content[0] is None:
+        body = os.listdir(os.path.join(ROOT, uri))
+        return (content[0], body)
+    else:
+        try:
+            with open(os.path.join(ROOT, uri)) as file_handle:
+                body = file_handle.read()
+                return (content[0], body)
+        except IOError:
+            return (404, "Not Found")
 
 
 def server():
