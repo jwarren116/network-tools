@@ -64,7 +64,7 @@ def resolve_uri(uri):
 
 
 def server(log_buffer=sys.stderr):
-    buffsize = 4096
+    buffsize = 32
     server_socket = socket.socket(
         socket.AF_INET,
         socket.SOCK_STREAM,
@@ -91,13 +91,17 @@ def server(log_buffer=sys.stderr):
 
             else:
                 # this socket is a handler socket created by client connection
-                data = readable.recv(buffsize)
-                if data:
-                    response = parse_request(data)
-                    readable.sendall(response)
-                else:
-                    readable.close()
-                    input.remove(readable)
+                req = ''
+                done = False
+                while not done:
+                    data = readable.recv(buffsize)
+                    if len(data) < buffsize:
+                        done = True
+                    req += data
+                response = parse_request(req)
+                readable.sendall(response)
+                readable.close()
+                input.remove(readable)
 
     server_socket.close()
 
