@@ -16,7 +16,7 @@ def test_body():
 def test_directory():
     response = client('GET / HTTP/1.1').split('\r\n')
     body = response[4]
-    assert 'make_time.py' in body
+    assert "<a href='make_time.py'>make_time.py</a>" in body
 
 
 def test_404():
