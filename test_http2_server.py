@@ -23,3 +23,15 @@ def test_404():
     response = client('GET does/not/exist.html HTTP/1.1').split('\r\n')
     first_line = response[0]
     assert first_line == 'HTTP/1.1 404 Not Found'
+
+
+def test_post():
+    response = client('POST does/not/exist.html HTTP/1.1').split('\r\n')
+    first_line = response[0]
+    assert first_line == 'HTTP/1.1 405 Method Not Allowed'
+
+
+def test_505():
+    response = client('GET /index.html HTTP/1.0').split('\r\n')
+    first_line = response[0]
+    assert first_line == 'HTTP/1.1 505 HTTP Version Not Supported'
