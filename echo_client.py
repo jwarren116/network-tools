@@ -1,5 +1,11 @@
+#!/usr/bin/env python
+
+from __future__ import unicode_literals
 import socket
 import sys
+
+
+test_get = "GET /index.html HTTP/1.1"
 
 
 def client(msg):
@@ -23,6 +29,7 @@ def client(msg):
             client_socket.close()
         response_msg += msg_part
 
+    print response_msg
     return response_msg
 
 
