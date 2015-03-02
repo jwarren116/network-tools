@@ -22,4 +22,4 @@ def test_directory():
 def test_404():
     response = client('GET does/not/exist.html HTTP/1.1').split('\r\n')
     first_line = response[0]
-    assert first_line == 'HTTP/1.1 404 Not Found'
+    assert first_line == 'HTTP/1.1 404 Page Not Found'

@@ -5,9 +5,6 @@ import socket
 import sys
 
 
-test_get = "GET /index.html HTTP/1.1"
-
-
 def client(msg):
     client_socket = socket.socket(
         socket.AF_INET,
