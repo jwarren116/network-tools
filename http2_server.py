@@ -8,19 +8,10 @@ import os
 ROOT = os.path.join(os.getcwd(), 'webroot')
 
 
-def response_ok(uri):
-    # send URI to be resolved
-    # include appropriate header reflecting correct content
-    # add body from appropriate resource
-
-    resolved_uri = resolve_uri(uri)
-    if resolved_uri[0] == 404:
-        response_code = "HTTP/1.1 404 Not Found"
-        headers = "Content-Type: text/plain"
-    else:
-        response_code = "HTTP/1.1 200 OK"
-        headers = "Content-Type: {}".format(resolved_uri[0])
-
+def response_ok(resolved_uri):
+    """returns response message with headers, date and response"""
+    response_code = "HTTP/1.1 200 OK"
+    headers = "Content-Type: {}".format(resolved_uri[0])
     date = "Date: {}".format(email.utils.formatdate(usegmt=True))
     response = "{}\r\n{}\r\n{}\r\n\r\n{}".format(
         response_code, date, headers, resolved_uri[1])
@@ -28,44 +19,57 @@ def response_ok(uri):
 
 
 def response_error(code, reason):
+    """formats errors raised to be returned to client"""
     response_code = "HTTP/1.1 {} {}".format(code, reason)
     date = "Date: {}".format(email.utils.formatdate(usegmt=True))
-    headers = "Content-Type: Text/HTML"
-    response = u"{}\r\n{}\r\n{}\r\n\r\n".format(response_code, date, headers)
+    headers = "Content-Type: text/plain"
+    response = u"{}\r\n{}\r\n{}\r\n\r\n{}".format(response_code, date,
+                                                  headers, reason)
     return response
 
 
 def parse_request(request):
+    """parse request and return URI, errors raised for invalid protocols
+    and requests
+    """
     request = request.split('\r\n')
     first_line = request[0].split(' ')
     if first_line[0] != "GET":
-        return response_error(405, "Method Not Allowed")
+        raise RequestError(405, "Method Not Allowed")
     elif first_line[2] != "HTTP/1.1":
-        return response_error(505, "HTTP Version Not Supported")
+        raise RequestError(505, "HTTP Version Not Supported")
     else:
-        return response_ok(first_line[1])
+        return first_line[1]
 
 
 def resolve_uri(uri):
-    # take URI from response_ok, return tuple of (content-type, body)
-    # if URI is directory, return listing of the directory (links)
-    # if URI not found, return 404
+    """returns tuple of (content, body), if directory, returns listing of links,
+    if not found, raises RequestError"""
     uri = uri.lstrip('/')
-    content = mimetypes.guess_type(uri)
-    if content[0] is None:
+    if os.path.isdir(os.path.join(ROOT, uri)):
         body = os.listdir(os.path.join(ROOT, uri))
         dir_body = "<!DOCTYPE html><html><body><ul>"
         for item in body:
             dir_body = "{}<a href='{}'>{}</a></br>".format(
                 dir_body, item, item)
-        return (content[0], dir_body)
+        return ('text/html', dir_body)
     else:
         try:
             with open(os.path.join(ROOT, uri), 'rb') as file_handle:
                 body = file_handle.read()
-                return (content[0], body)
+                return (mimetypes.guess_type(uri)[0], body)
         except IOError:
-            return (404, "404 - Page Not Found")
+            raise RequestError(404, "Page Not Found")
+
+
+class RequestError(BaseException):
+    """returns appropriately formatted response error when raised"""
+    def __init__(self, code, reason):
+        self.code = code
+        self.reason = reason
+
+    def __str__(self):
+        return response_error(self.code, self.reason)
 
 
 def server():
@@ -89,7 +93,13 @@ def server():
                 req += msg
 
             # send full request to parser, prints request and response
-            response_msg = parse_request(req)
+            try:
+                parsed = parse_request(req)
+                resolved = resolve_uri(parsed)
+                response_msg = response_ok(resolved)
+            except RequestError as error:
+                response_msg = str(error)
+
             print "REQUEST: {}".format(req)
             print "RESPONSE: \n{}\n--end--".format(response_msg)
             connection.sendall(response_msg)
